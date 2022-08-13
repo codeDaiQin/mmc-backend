@@ -1,0 +1,4 @@
+input CreatePostInput {
+  content: String!
+  title: String!
+}
