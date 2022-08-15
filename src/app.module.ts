@@ -8,6 +8,8 @@ import { GqlConfigService } from './gql-config.service';
 
 import config from '@/config';
 
+import { ChatModule } from '@/modules/chat/chat.module';
+
 // TypeScript & GraphQL https://docs.nestjs.com/graphql/quick-start
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import config from '@/config';
     //   driver: ApolloDriver,
     //   useClass: GqlConfigService,
     // }),
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [],
