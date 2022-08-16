@@ -1,43 +1,36 @@
+import { WsGateway } from '@/common/websocket/websocket.gateway';
 import {
   GatewayMetadata,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway<GatewayMetadata>(3001, {
   cors: {
     origin: '*',
   },
 })
-export class ChatGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
-  @WebSocketServer()
-  server: Server;
-
-  afterInit(server: Server) {
-    this.server = server;
+export class ChatGateway extends WsGateway {
+  connected: Map<string, number>;
+  constructor() {
+    super();
+    this.connected = new Map();
   }
+
   @SubscribeMessage('message')
-  handleMessage(socket: Socket, payload: any): any {
-    socket.emit('message', payload);
+  handleMessage(socket: Socket, user_id: string): void {
+    this.connected.set(user_id, (this.connected.get(user_id) ?? 0) + 1);
+    socket.emit('message', this.connected.get(user_id) ?? '找不到');
   }
 
-  // 生命周期钩子 https://docs.nestjs.com/websockets/gateways#lifecycle-hooks
-  handleDisconnect(client: Socket) {
-    // throw new Error('Method not implemented.');
-    console.log('handleDisconnect');
-    // client.send('断开');
+  async handleConnection(client: Socket) {
+    // 获取room所有用户
+    super.handleConnection(client);
   }
 
-  handleConnection(client: Socket) {
-    // throw new Error('Method not implemented.');
-    console.log('handleConnection');
-    // client.send('连接');
+  async handleDisconnect(client: Socket) {
+    // 从room中删除
+    super.handleDisconnect(client);
   }
 }
